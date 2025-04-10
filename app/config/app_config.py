@@ -5,6 +5,7 @@ from enum import Enum
 import secrets
 import os
 from collections.abc import Sequence
+from dotenv import load_dotenv
 
 class Environment(str, Enum):
     DEV = "dev"
@@ -85,10 +86,14 @@ class Settings(BaseSettings):
     # First Superuser
     FIRST_SUPERUSER_EMAIL: EmailStr | None = None
     FIRST_SUPERUSER_PASSWORD: str | None = None
+
+    # AI Providers
+    OPENAI_API_KEY: str
     
     # Read from .env file
     _env_file: str = f"{os.path.dirname(os.path.abspath(__file__))}/../../envs/.{os.getenv("APP_ENV", "dev")}.env"
     print(f"Loading env file: {_env_file}")
+    load_dotenv(_env_file, override=True)
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=_env_file,

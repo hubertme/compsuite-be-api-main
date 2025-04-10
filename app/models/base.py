@@ -3,18 +3,22 @@ from typing import Any
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy import Column, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import Query
 
 @as_declarative()
 class Base:
     id: Any
     __name__: str
 
-    # Generate __tablename__ automatically
+    # Generate plural __tablename__ automatically
     @declared_attr
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+        name = cls.__name__.lower()
+        if name.endswith('y'):
+            return name[:-1] + 'ies'
+        return name + 's'
 
-    # Add created_at and updated_at to all tables
+    # Add timestamp columns to all tables
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True),
@@ -22,3 +26,9 @@ class Base:
         onupdate=func.now(),
         nullable=False,
     )
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Filter out deleted records by default
+    @classmethod
+    def query(cls) -> Query:
+        return super().query().filter(cls.deleted_at == None)
