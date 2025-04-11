@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.db_util import get_db
 from app.services.session import SessionService
 from app.schemas.base import ResponseModel, GENERAL_ERROR, resp_success
-from app.schemas.session import SessionResponse, SendNewMessageRequest
+from app.schemas.session import SessionResponse, SendNewMessageRequest, CreateSessionRequest
 
 router = APIRouter()
 
@@ -34,6 +34,7 @@ async def get_sessions(
 @router.post("/", response_model=ResponseModel)
 async def create_session(
     request: Request,
+    req: CreateSessionRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -42,7 +43,7 @@ async def create_session(
     try:
         company_uuid = getattr(request.state, "company_uuid", None)
         
-        session = await SessionService.create_new_session(db, company_uuid)
+        session = await SessionService.create_new_session(db, company_uuid, req.openai_assistant_id)
         return resp_success(data=SessionResponse.model_validate(session))
     except Exception as e:
         return JSONResponse(

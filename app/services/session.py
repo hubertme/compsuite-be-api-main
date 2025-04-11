@@ -23,7 +23,7 @@ class SessionService:
         return formatted_messages
 
     @classmethod
-    async def create_new_session(cls, db: AsyncSession, company_uuid: str) -> Session:
+    async def create_new_session(cls, db: AsyncSession, company_uuid: str, openai_assistant_id: str) -> Session:
         """
         Create a new conversation for the given company UUID.
         """
@@ -32,6 +32,7 @@ class SessionService:
             id=str(uuid.uuid4()),
             company_uuid=company_uuid,
             openai_thread_id=thread.id,
+            openai_assistant_id=openai_assistant_id,
         )
         db.add(session)
         await db.flush()
@@ -122,9 +123,7 @@ class SessionService:
         
         OpenAIUtil.add_message_to_thread(session.openai_thread_id, content)
         session.last_message_at = datetime.now()
-
-        assistant_id = "asst_RFkSdaaZovJ9CWznwwfI2lPm"
-        messages = OpenAIUtil.run_assistant(session.openai_thread_id, assistant_id)
+        messages = OpenAIUtil.run_assistant(session.openai_thread_id, session.openai_assistant_id)
         session.last_message_at = datetime.now()
 
         await db.commit()

@@ -21,3 +21,6 @@ class SessionResponse(SessionBase):
 
 class SendNewMessageRequest(BaseModel):
     message: str
+
+class CreateSessionRequest(BaseModel):
+    openai_assistant_id: str
