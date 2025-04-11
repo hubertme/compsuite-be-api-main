@@ -13,7 +13,11 @@ class SessionCreate(SessionBase):
 
 
 class SessionResponse(SessionBase):
-    id: int
+    id: str
 
     class Config:
         from_attributes = True
+
+
+class SendNewMessageRequest(BaseModel):
+    message: str

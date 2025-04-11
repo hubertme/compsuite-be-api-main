@@ -23,7 +23,7 @@ class OpenAIUtil:
     @classmethod
     def close_thread(cls, thread_id: str) -> Thread:
         """Close the thread."""
-        thread = cls.__client.beta.threads.update(thread_id=thread_id, closed=True)
+        thread = cls.__client.beta.threads.delete(thread_id=thread_id)
         return thread
     
     @classmethod
@@ -33,7 +33,7 @@ class OpenAIUtil:
         return messages.data
     
     @classmethod
-    def run_assistant(cls, thread_id: str, assistant_id: str) -> str:
+    def run_assistant(cls, thread_id: str, assistant_id: str) -> List[Message]:
         """Run the Assistant on the thread and get the response."""
         # Create a run
         run = cls.__client.beta.threads.runs.create(
@@ -54,11 +54,11 @@ class OpenAIUtil:
             time.sleep(1)
         
         # Retrieve the latest message from the thread (Assistant's response)
-        messages = cls.get_all_messages_from_thread(thread_id)
+        messages = cls.get_all_messages_from_thread(thread_id, is_reverse=False)
         if len(messages) <= 0:
             raise Exception("No messages found in the thread.")
         
-        return messages[0].content[0].text.value
+        return messages
     
     @classmethod
     def add_message_to_thread(cls, thread_id, content):
