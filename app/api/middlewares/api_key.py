@@ -1,9 +1,11 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, Response, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.company import CompanyService
 from app.utils.db_util import get_db
 import structlog
+from app.schemas.base import AUTH_ERROR, ResponseModel
 
 logger = structlog.get_logger()
 
@@ -24,9 +26,13 @@ class CompanyContextMiddleware(BaseHTTPMiddleware):
         api_key = request.headers.get("X-API-Key")
         if not api_key:
             logger.warning("missing_api_key", path=request.url.path)
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Missing API key. Please provide X-API-Key header with format 'sk-[id].[secret]'.",
+                content=ResponseModel(
+                    code=AUTH_ERROR,
+                    message="Missing API key",
+                    data=None
+                ).model_dump()
             )
             
         # Get database session
@@ -40,16 +46,24 @@ class CompanyContextMiddleware(BaseHTTPMiddleware):
             
             if not company:
                 logger.warning("invalid_api_key", api_key=api_key, path=request.url.path)
-                raise HTTPException(
+                return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid API key.",
+                    content=ResponseModel(
+                        code=AUTH_ERROR,
+                        message="Invalid API key",
+                        data=None
+                    ).model_dump()
                 )
                 
             if not company.is_active:
                 logger.warning("inactive_company", company_uuid=company.company_uuid, path=request.url.path)
-                raise HTTPException(
+                return JSONResponse(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Company account is inactive.",
+                    content=ResponseModel(
+                        code=AUTH_ERROR,
+                        message="Company is inactive",
+                        data=None
+                    ).model_dump()
                 )
                 
             # Set company context in request state
@@ -69,9 +83,13 @@ class CompanyContextMiddleware(BaseHTTPMiddleware):
                 error_type=type(e).__name__,
                 exc_info=True,
             )
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal server error during API key authentication.",
+                content=ResponseModel(
+                    code=AUTH_ERROR,
+                    message="An error happened during authentication",
+                    data=None
+                ).model_dump()
             )
         finally:
             # Clean up database session

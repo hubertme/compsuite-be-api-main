@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import Any, Optional
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 # Constants
 OK = "OK"
 DEV_REPORT_ERROR = "err/dev-report"
 BAD_REQUEST_FORMAT = "err/bad-request-format"
+AUTH_ERROR = "err/auth-error"
 EMPTY_REQUIRED_FIELD_REQUEST = "EMPTY_REQUIRED_FIELD_REQUEST"
 GENERAL_ERROR = "GENERAL_ERROR"
 
@@ -50,7 +51,7 @@ def resp_format_error(data: Any = None) -> HTTPException:
 
 def resp_empty_field_error() -> HTTPException:
     return HTTPException(
-        status_code=400,
+        status_code=status.HTTP_400_BAD_REQUEST,
         detail=ResponseModel(
             code=EMPTY_REQUIRED_FIELD_REQUEST,
             message="Empty required field detected, please check your payload",
@@ -60,7 +61,7 @@ def resp_empty_field_error() -> HTTPException:
 
 def resp_general_error(data: Any = None) -> HTTPException:
     return HTTPException(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=ResponseModel(
             code=GENERAL_ERROR,
             message="An error occurred",
