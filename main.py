@@ -5,6 +5,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.v1.routes import v1_api_router
 from app.api.middlewares.middleware import setup_middleware, setup_rate_limiter
+from app.api.middlewares.api_key import CompanyContextMiddleware
 from app.api.errors.http_error import add_exception_handlers
 from app.config.app_config import settings, routes_name
 from app.core.monitoring import init_monitoring, track_request_metrics
@@ -30,6 +31,7 @@ def create_app() -> FastAPI:
     # Add middlewares
     setup_middleware(app)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(CompanyContextMiddleware)
 
     # Add exception handlers
     add_exception_handlers(app)

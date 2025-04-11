@@ -11,3 +11,4 @@ class Company(Base):
     is_active = Column(Boolean, default=True)
     display_name = Column(String)
     sessions = relationship("Session", back_populates="company")
+    api_keys = relationship("CompanyAPIKey", back_populates="company", cascade="all, delete-orphan")

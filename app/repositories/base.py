@@ -35,6 +35,22 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await self.session.refresh(db_obj)
         return db_obj
 
+    async def create_bulk(self, objs_in: List[CreateSchemaType]) -> List[ModelType]:
+        """Bulk creation without committing each insert individually.
+           Commits only once after all objects have been added."""
+        db_objs = []
+        for obj in objs_in:
+            obj_in_data = jsonable_encoder(obj)
+            db_obj = self.model(**obj_in_data)
+            self.session.add(db_obj)
+            db_objs.append(db_obj)
+        await self.session.flush()
+        for db_obj in db_objs:
+            await self.session.refresh(db_obj)
+            
+        await self.session.commit()
+        return db_objs
+
     async def update(
         self, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.schemas.deleteme import SumNumberRequest, SubtractNumberRequest, SubtractNumberResponse, ResponseModel, HashDataRequest
-from app.schemas.base import resp_success, resp_format_error
+from app.schemas.base import resp_success, resp_format_error, resp_general_error
 from app.services.deleteme import ServiceDeleteme
 
 router = APIRouter()
@@ -22,6 +22,6 @@ async def hash_data(data: HashDataRequest):
     elif str.lower(data.encoding) == "base64":
         result = ServiceDeleteme.hash_data_base64(data.plain_text)
     else:
-        raise resp_format_error("Encoding must be hex or base64")
+        raise resp_general_error("Encoding must be hex or base64")
 
     return resp_success(data=result)
