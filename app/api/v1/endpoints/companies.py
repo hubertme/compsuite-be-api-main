@@ -12,8 +12,6 @@ router = APIRouter()
 async def create_company(req: CreateCompanyRequest, db: AsyncSession = Depends(get_db)):
     try:
         result = await CompanyService.create_company(db, req)
-        # The create_company method already returns a dictionary with the API key
-        # so we don't need to convert it to a Pydantic model
         return resp_success(
             message="Company created successfully", 
             data=result,
@@ -21,16 +19,17 @@ async def create_company(req: CreateCompanyRequest, db: AsyncSession = Depends(g
     except ValueError as e:
         raise resp_format_error(str(e))
     except Exception as e:
-        raise resp_general_error(e)
+        raise resp_general_error(str(e))
     
 @router.get("/info", response_model=ResponseModel)
 async def get_current_company_info(request: Request, db: AsyncSession = Depends(get_db)):
     try:
         company_uuid = getattr(request.state, "company_uuid", None)
+
         company = await CompanyService.get_company_by_uuid(db, company_uuid)
         company_response = CompanyResponse.model_validate(company)
         return resp_success(data=company_response)
     except ValueError as e:
         raise resp_format_error(str(e))
     except Exception as e:
-        raise resp_general_error(e)
+        raise resp_general_error(str(e))
