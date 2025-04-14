@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dotenv import load_dotenv
 
 class Environment(str, Enum):
+    LOCAL = "local"
     DEV = "dev"
     STAGING = "staging"
     PROD = "prod"
@@ -91,7 +92,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     
     # Read from .env file
-    _env_file: str = f"{os.path.dirname(os.path.abspath(__file__))}/../../envs/.{os.getenv("APP_ENV", "dev")}.env"
+    _env_file: str = f"{os.path.dirname(os.path.abspath(__file__))}/../../envs/.{os.getenv("APP_ENV", "local")}.env"
     print(f"Loading env file: {_env_file}")
     load_dotenv(_env_file, override=True)
     model_config = SettingsConfigDict(

@@ -10,9 +10,12 @@ from app.api.errors.http_error import add_exception_handlers
 from app.config.app_config import settings, routes_name
 from app.core.monitoring import init_monitoring, track_request_metrics
 from app.utils.log_util import setup_logging
+from app.utils.openai_util import OpenAIUtil
 
 # Setup structured logging
-setup_logging()
+def setup_services() -> None:
+    setup_logging()
+    OpenAIUtil.init()
 
 def setup_routes(app: FastAPI) -> None:
     app.include_router(v1_api_router, prefix=routes_name.API_V1)
@@ -35,6 +38,7 @@ def create_app() -> FastAPI:
 
     # Add exception handlers
     add_exception_handlers(app)
+    setup_services()
 
     # Setup API routes
     setup_routes(app)
