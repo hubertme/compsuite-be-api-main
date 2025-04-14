@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
@@ -12,19 +12,21 @@ RUN apt-get update \
         python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
+# Install Poetry explicitly
 RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && ln -s /root/.local/bin/poetry /usr/local/bin/poetry \
+    && poetry --version \
     && poetry config virtualenvs.create false
 
 # Copy Poetry files
 COPY pyproject.toml poetry.lock* ./
 
 # Install dependencies
-RUN poetry install --no-interaction --no-ansi --no-root --no-dev \
+RUN poetry install --no-interaction --no-ansi --no-root --without dev \
     && rm -rf ~/.cache/pypoetry
 
 # Runtime stage
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -36,8 +38,11 @@ RUN apt-get update \
     && apt-get clean
 
 # Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy Poetry binary from builder
+COPY --from=builder /root/.local/bin/poetry /usr/local/bin/poetry
 
 # Create non-root user
 RUN adduser --disabled-password --gecos "" --uid 1001 appuser \
@@ -51,8 +56,9 @@ COPY --chown=appuser:appuser . .
 ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app:${PATH}" \
-    PORT=8000
+    PATH="/app:/usr/local/bin:$PATH" \
+    PORT=8000 \
+    APP_ENV="dev"
 
 # Switch to non-root user
 USER 1001
