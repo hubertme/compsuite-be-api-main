@@ -8,7 +8,7 @@ from app.schemas.company import CreateCompanyRequest, CompanyResponse
 
 router = APIRouter()
 
-@router.post("/", response_model=ResponseModel)
+@router.post("", response_model=ResponseModel)
 async def create_company(req: CreateCompanyRequest, db: AsyncSession = Depends(get_db)):
     try:
         result = await CompanyService.create_company(db, req)

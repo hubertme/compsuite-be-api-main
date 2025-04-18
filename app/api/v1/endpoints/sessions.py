@@ -8,7 +8,7 @@ from app.schemas.session import SessionResponse, SendNewMessageRequest, CreateSe
 
 router = APIRouter()
 
-@router.get("/", response_model=ResponseModel)
+@router.get("", response_model=ResponseModel)
 async def get_sessions(
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -31,7 +31,7 @@ async def get_sessions(
             ).model_dump()
         )
     
-@router.post("/", response_model=ResponseModel)
+@router.post("", response_model=ResponseModel)
 async def create_session(
     request: Request,
     req: CreateSessionRequest,
