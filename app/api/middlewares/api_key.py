@@ -17,11 +17,10 @@ class CompanyContextMiddleware(BaseHTTPMiddleware):
     """
     
     async def dispatch(self, request: Request, call_next):
-        # Check if path requires API key authentication
-        # For multi-tenancy RAG endpoints like "/docs/reviews/query"
-        if not self._requires_api_key(request.url.path):
+        # Skip authentication for OPTIONS requests to allow CORS preflight and multi-tenancy RAG endpoints like "/docs/reviews/query"
+        if not self._requires_api_key(request.url.path) or request.method == "OPTIONS":
             return await call_next(request)
-           
+            
         # Extract API key from headers
         api_key = request.headers.get("X-API-Key")
         if not api_key:

@@ -82,18 +82,15 @@ def setup_middleware(app: FastAPI) -> None:
         return response
 
     # CORS
+    allow_creds = True
+    if len(config.CORS_ORIGINS) > 0 and config.CORS_ORIGINS[0] == '*':
+        allow_creds = False
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allow_headers=[
-            "Content-Type",
-            "Authorization",
-            "Accept",
-            "Origin",
-            "X-Requested-With",
-        ],
+        allow_credentials=allow_creds,
+        allow_methods=['*'],
+        allow_headers=['*'],
     )
 
     # Trusted Host Middleware
